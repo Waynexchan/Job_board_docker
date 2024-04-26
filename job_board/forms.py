@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Applicant, Company
+from .models import CustomUser, Applicant, Company, Application, JobPosting
 
 class ApplicantSignUpForm(UserCreationForm):
     email = forms.EmailField(required=True, help_text="Enter a valid email address")
@@ -37,3 +37,18 @@ class CompanySignUpForm(UserCreationForm):
             user.save()
             Company.objects.create(user=user)
         return user
+    
+class JobPostingForm(forms.ModelForm):
+    class Meta:
+        model = JobPosting
+        fields = ['title', 'description', 'salary', 'is_active']
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['cover_letter']
+
+class ApplicationStatusForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['status']

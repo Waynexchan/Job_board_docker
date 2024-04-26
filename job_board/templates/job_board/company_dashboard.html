@@ -1,0 +1,14 @@
+{% extends "job_board/_base.html" %}
+
+{% block content %}
+<h2>Company Dashboard</h2>
+<p>Welcome {{ request.user.username }}</p>
+
+<h3>Your Job Postings:</h3>
+<ul>
+    {% for job in job_posting %}
+    <li>{{ job.title }} - <a href="{% url 'update_application_status' application_id=job.id %}">Update Status</a></li>
+    {% endfor %}
+</ul>
+<a href="{% url 'create_job_posting' %}">Create a new job posting</a>
+{% endblock %}

@@ -86,6 +86,7 @@ class Company(models.Model):
 class Application(models.Model):
     job_posting = models.ForeignKey(JobPosting, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='applications')
+    cover_letter = models.FileField(upload_to='cover_letters/')
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
         ('ACCEPTED', 'Accepted'),

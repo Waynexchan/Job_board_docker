@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_protect
-from .models import JobPosting
-from .forms import ApplicantSignUpForm, CompanySignUpForm
+from .models import JobPosting, Company, Applicant, Application
+from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm, JobPostingForm, ApplicationStatusForm
 
 
 def index(request):
@@ -59,3 +59,62 @@ def custom_login(request):
             return render(request, 'login.html', {'error': 'Login Fail.'})
     else:
         return render(request, 'login.html')
+    
+def company_dashboard(request):
+    if not request.user.is_company:
+        return redirect('')
+    
+    company = get_object_or_404(Company, user=request.user)
+    job_postings = JobPosting.objects.filter(company=company)
+    context= {
+        'company': company,
+        'job_posting': job_postings
+    }
+    return render(request, 'job_board/company_dashboard.html', context)
+
+def create_job_posting(request):
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST)
+        if form.is_valid():
+            job_posting = form.save(commit=False)
+            job_posting.company = get_object_or_404(Company, user=request.user)
+            job_posting.save()
+            return redirect('company_dashboard')
+    else:
+        form = JobPostingForm()
+    return render(request, 'job_board/create_job_posting.html', {'form': form})
+
+def update_application_status(request, application_id):
+    application = get_object_or_404(Application, pk=application_id, job_posting__company__user=request.user)
+    if request.method == 'POST':
+        form = ApplicationStatusForm(request.POST, instance=application)
+        if form.is_valid():
+            form.save()
+            return redirect('company_dashboard')
+    else:
+        form = ApplicationStatusForm(instance=application)
+    return render(request, 'job_board/update_application_status.html', {'form': form})
+
+def applicant_dashboard(request):
+    if not request.user.is_applicant:
+        return redirect('index')  # 或其他适当的重定向
+
+    job_postings = JobPosting.objects.filter(is_active=True)
+    context = {
+        'job_postings': job_postings
+    }
+    return render(request, 'job_board/applicant_dashboard.html', context)
+
+def apply_for_job(request, job_posting_id):
+    job_posting = get_object_or_404(JobPosting, pk=job_posting_id, is_active=True)
+    if request.method == 'POST':
+        form = ApplicationForm(request.POST, request.FILES)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.applicant = get_object_or_404(Applicant, user=request.user)
+            application.job_posting = job_posting
+            application.save()
+            return redirect('applicant_dashboard')
+    else:
+        form = ApplicationForm()
+    return render(request, 'job_board/apply_for_job.html', {'form': form, 'job_posting': job_posting})
