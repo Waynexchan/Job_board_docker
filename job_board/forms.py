@@ -24,6 +24,18 @@ class ApplicantSignUpForm(UserCreationForm):
             user.save()
             Applicant.objects.create(user=user)
         return user
+    
+class ApplicationAdminForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_applicant = True  
+        if commit:
+            user.save()
+        return user
 
 class CompanySignUpForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -36,6 +48,18 @@ class CompanySignUpForm(UserCreationForm):
         if commit:
             user.save()
             Company.objects.create(user=user)
+        return user
+    
+class CompanyAdminForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_company = True  
+        if commit:
+            user.save()
         return user
     
 class JobPostingForm(forms.ModelForm):
