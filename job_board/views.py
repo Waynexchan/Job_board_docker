@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_protect
 from .models import JobPosting, Company, Applicant, Application
-from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm, JobPostingForm, ApplicationStatusForm
+from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm,LoginForm, JobPostingForm, ApplicationStatusForm
 
 
 def index(request):
@@ -46,19 +46,24 @@ def register_company(request):
 @csrf_protect
 def custom_login(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            if user.is_applicant:
-                return redirect('applicant_dashboard')
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)
+                if hasattr(user, 'is_applicant') and user.is_applicant:
+                    return redirect('applicant_dashboard')
+                else:
+                    return redirect('company_dashboard')
             else:
-                return redirect('company_dashboard')
+                return render(request, 'job_board/login.html', {'form': form, 'error': 'Your Username and password didn\'t match. Please try again.'})
         else:
-            return render(request, 'login.html', {'error': 'Login Fail.'})
+            return render(request, 'job_board/login.html', {'form': form})
     else:
-        return render(request, 'login.html')
+        form = LoginForm()
+        return render(request, 'job_board/login.html', {'form': form})
     
 def company_dashboard(request):
     if not request.user.is_company:
@@ -97,8 +102,8 @@ def update_application_status(request, application_id):
 
 def applicant_dashboard(request):
     if not request.user.is_applicant:
-        return redirect('index')  # 或其他适当的重定向
-
+        return redirect('') 
+    
     job_postings = JobPosting.objects.filter(is_active=True)
     context = {
         'job_postings': job_postings
