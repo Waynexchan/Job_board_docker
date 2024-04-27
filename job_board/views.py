@@ -11,13 +11,16 @@ from django.contrib import messages
 def index(request):
     active_postings = JobPosting.objects.filter(is_active=True)
     user_is_applicant = False
+    user_is_company = False
 
     if request.user.is_authenticated:
         user_is_applicant = request.user.is_applicant
+        user_is_company = request.user.is_company
 
     context = {
         "job_postings": active_postings,
-        "user_is_applicant": user_is_applicant  
+        "user_is_applicant": user_is_applicant,
+        "user_is_company": user_is_company  
     }
 
     return render(request, 'job_board/index.html', context)
@@ -175,6 +178,19 @@ def create_job_posting(request):
     else:
         form = JobPostingForm()
     return render(request, 'job_board/create_job_posting.html', {'form': form})
+
+def edit_job_posting(request, pk):
+    job_posting = get_object_or_404(JobPosting, pk=pk, company__user=request.user)
+    
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST, instance=job_posting)
+        if form.is_valid():
+            form.save()
+            return redirect('company_dashboard')
+    else:
+        form = JobPostingForm(instance=job_posting)
+    
+    return render(request, 'job_board/edit_job_posting.html', {'form': form})
 
 def update_application_status(request, application_id):
     application = get_object_or_404(Application, pk=application_id, job_posting__company__user=request.user)

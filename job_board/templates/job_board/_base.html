@@ -30,7 +30,19 @@
                             Applicant Dashboard
                         </a>
                     {% endif %}
+                    {% if user_is_company %}
+                        <a href="{% url 'company_dashboard' %}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-4">
+                            Company Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'home' %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4">
+                        Home
+                    </a>
                     <a href="{% url 'logout' %}" class="text-red-500">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Login
+                    </a>
                 {% endif %}
             </div>
         </div>

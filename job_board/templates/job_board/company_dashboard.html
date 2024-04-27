@@ -10,6 +10,7 @@
 <ul>
     {% for job in job_postings %}
     <li>{{ job.title }}
+        <a href="{% url 'edit_job_posting' job.id %}" class="btn btn-info">Edit</a>
         <ul>
             {% for application in job.applications.all %}
             <li>Application by {{ application.applicant.name }} - <a href="{% url 'update_application_status' application_id=application.id %}">Update Status</a></li>
