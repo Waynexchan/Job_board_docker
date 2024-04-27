@@ -47,8 +47,16 @@ class CompanySignUpForm(UserCreationForm):
         user.is_company = True
         if commit:
             user.save()
-            Company.objects.create(user=user)
         return user
+    
+class CompanyInfoForm(forms.ModelForm):
+    name = forms.CharField(max_length=100, required=True)
+    address = forms.CharField(max_length=255, required=True)
+    description = forms.CharField(widget=forms.Textarea, required=True)
+
+    class Meta:
+        model = Company
+        fields = ['name', 'address', 'description']
     
 class CompanyAdminForm(UserCreationForm):
     class Meta:
@@ -80,3 +88,9 @@ class ApplicationStatusForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=100)
     password = forms.CharField(label='Password', widget=forms.PasswordInput)
+
+class CompanyUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = ['name', 'address', 'description']
+

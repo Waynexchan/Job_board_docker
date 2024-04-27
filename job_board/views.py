@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_protect
 from .models import JobPosting, Company, Applicant, Application
-from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm,LoginForm, JobPostingForm, ApplicationStatusForm
+from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm, CompanyUpdateForm,LoginForm, JobPostingForm, ApplicationStatusForm, CompanyInfoForm
 
 
 def index(request):
@@ -35,13 +35,30 @@ def register_company(request):
     if request.method == 'POST':
         form = CompanySignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = form.save()
+            login(request, user)  
+            return redirect('update_company_info')  
         else:
             return render(request, 'job_board/register_company.html', {'form': form, 'error': 'Please revise the information provided.'})
     else:
         form = CompanySignUpForm()
     return render(request, 'job_board/register_company.html', {'form': form})
+
+def update_company_info(request):
+    try:
+        company = request.user.company
+    except Company.DoesNotExist:
+        company = Company(user=request.user)
+        company.save()
+
+    if request.method == 'POST':
+        form = CompanyInfoForm(request.POST, instance=company)
+        if form.is_valid():
+            form.save()
+            return redirect('company_dashboard')
+    else:
+        form = CompanyInfoForm(instance=company)
+    return render(request, 'job_board/update_company_info.html', {'form': form})
 
 @csrf_protect
 def custom_login(request):
@@ -65,19 +82,30 @@ def custom_login(request):
         form = LoginForm()
         return render(request, 'job_board/login.html', {'form': form})
     
+def user_logout(request):
+    logout(request)
+    return redirect('home')
+    
 def company_dashboard(request):
     if not request.user.is_company:
-        return redirect('')
-    
+        return redirect('home')  
+
     company = get_object_or_404(Company, user=request.user)
+    if not company.name or not company.address or not company.description:
+        return redirect('update_company_info')
+    
     job_postings = JobPosting.objects.filter(company=company)
-    context= {
+    context = {
         'company': company,
-        'job_posting': job_postings
+        'job_postings': job_postings
     }
     return render(request, 'job_board/company_dashboard.html', context)
 
 def create_job_posting(request):
+    company = get_object_or_404(Company, user=request.user)
+    if not company.name or not company.address or not company.description:
+        return redirect('update_company_info')
+    
     if request.method == 'POST':
         form = JobPostingForm(request.POST)
         if form.is_valid():
@@ -102,7 +130,7 @@ def update_application_status(request, application_id):
 
 def applicant_dashboard(request):
     if not request.user.is_applicant:
-        return redirect('') 
+        return redirect('home') 
     
     job_postings = JobPosting.objects.filter(is_active=True)
     context = {
