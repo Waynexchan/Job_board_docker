@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 from .views import (
     index, job_detail, register_applicant, register_company, custom_login, company_dashboard,
-    create_job_posting, update_application_status, applicant_dashboard, apply_for_job, update_company_info, user_logout
+    create_job_posting, update_application_status, applicant_dashboard, apply_for_job, update_company_info, user_logout, update_applicant_info
 )
 
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     path('apply_for_job/<int:job_posting_id>/', apply_for_job, name='apply_for_job'),
     path('company/update_info/', update_company_info, name='update_company_info'),
     path('logout/', user_logout, name='logout'),
+    path('applicant/update_info/', update_applicant_info, name='update_applicant_info'),
 
 ]

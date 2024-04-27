@@ -20,7 +20,7 @@ class Applicant(models.Model):
     address = models.CharField(max_length=255)
     tel = models.CharField(max_length=20)
     resume = models.FileField(upload_to='resumes/')
-    cover_letter = models.TextField(default='No cover letter provided')
+    cover_letter = models.FileField(upload_to='cover_letters/', default='No cover letter provided')
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
         ('ACCEPTED', 'Accepted'),

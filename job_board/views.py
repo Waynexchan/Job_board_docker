@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_protect
 from .models import JobPosting, Company, Applicant, Application
-from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm, CompanyUpdateForm,LoginForm, JobPostingForm, ApplicationStatusForm, CompanyInfoForm
+from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm,ApplicantInfoForm, CompanyUpdateForm, LoginForm, JobPostingForm, ApplicationStatusForm, CompanyInfoForm
 
 
 def index(request):
@@ -23,13 +23,30 @@ def register_applicant(request):
     if request.method == 'POST':
         form = ApplicantSignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = form.save()
+            login(request, user)  
+            return redirect('update_applicant_info')  
         else:
             return render(request, 'job_board/register_applicant.html', {'form': form, 'error': 'Please revise the information provided.'})
     else:
         form = ApplicantSignUpForm()
     return render(request, 'job_board/register_applicant.html', {'form': form})
+
+def update_applicant_info(request):
+    try:
+        applicant = request.user.applicant
+    except Applicant.DoesNotExist:
+        applicant = Applicant(user=request.user)
+        applicant.save()
+
+    if request.method == 'POST':
+        form = ApplicantInfoForm(request.POST, request.FILES, instance=applicant)
+        if form.is_valid():
+            form.save()
+            return redirect('applicant_dashboard')
+    else:
+        form = ApplicantInfoForm(instance=applicant)
+    return render(request, 'job_board/update_applicant_info.html', {'form': form})
 
 def register_company(request):
     if request.method == 'POST':
@@ -129,14 +146,29 @@ def update_application_status(request, application_id):
     return render(request, 'job_board/update_application_status.html', {'form': form})
 
 def applicant_dashboard(request):
-    if not request.user.is_applicant:
-        return redirect('home') 
+    if not request.user.is_authenticated or not hasattr(request.user, 'applicant'):
+        return redirect('home')
+
+    applicant = request.user.applicant
     
+    if not applicant.name or not applicant.address or not applicant.tel or not applicant.resume:
+        return redirect('update_applicant_info')  
+
     job_postings = JobPosting.objects.filter(is_active=True)
     context = {
         'job_postings': job_postings
     }
     return render(request, 'job_board/applicant_dashboard.html', context)
+
+def applicant_info_view(request):
+    if request.method == 'POST':
+        form = ApplicantInfoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('applicant_dashboard') 
+    else:
+        form = ApplicantInfoForm()
+    return render(request, 'applicant_info_form.html', {'form': form})
 
 def apply_for_job(request, job_posting_id):
     job_posting = get_object_or_404(JobPosting, pk=job_posting_id, is_active=True)

@@ -25,6 +25,29 @@ class ApplicantSignUpForm(UserCreationForm):
             Applicant.objects.create(user=user)
         return user
     
+class ApplicantInfoForm(forms.ModelForm):
+    name = forms.CharField(max_length=100, required=True, label="Full Name")
+    address = forms.CharField(max_length=255, required=True, label="Address")
+    tel = forms.CharField(max_length=20, required=True, label="Telephone")
+    resume = forms.FileField(required=True, label="Resume", help_text="Upload your resume.")
+    cover_letter = forms.FileField(required=False, label="Cover Letter", help_text="Optional: Upload your cover letter in PDF format.")
+
+    class Meta:
+        model = Applicant
+        fields = ['name', 'address', 'tel', 'resume', 'cover_letter']
+
+    def clean_resume(self):
+        resume = self.cleaned_data.get('resume')
+        if resume and not resume.name.endswith('.pdf'):
+            raise ValidationError("Only PDF files are accepted for resumes.")
+        return resume
+
+    def clean_cover_letter(self):
+        cover_letter = self.cleaned_data.get('cover_letter')
+        if cover_letter and not cover_letter.name.endswith('.pdf'):
+            raise ValidationError("Only PDF files are accepted for cover letters.")
+        return cover_letter
+    
 class ApplicationAdminForm(UserCreationForm):
     class Meta:
         model = CustomUser
