@@ -95,6 +95,9 @@ class Application(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     application_date = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('applicant', 'job_posting')
+
     def __str__(self):
         return f'{self.applicant.name} applied for {self.job_posting.title} | Status: {self.status}'
 

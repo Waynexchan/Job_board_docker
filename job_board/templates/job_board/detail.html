@@ -2,10 +2,34 @@
 {% load humanize %}
 {% block content %}
 <div class="w-10/12 mx-auto">
-    <p class="pb-6"><a href="{% url 'home' %}" class="border border-gray-400 rounded px-4 py-2 hover:bg-gray-200">Go back</a></p>
-    <h1 class="text-3xl font-semibold pb-4 underline underline-offset-8">{{posting.title}}</h1>
-    <p class="pb-2 text-xl">Company: {{posting.company}}</p>
-    <p class="pb-2 font-semibold">Salary: ${{posting.salary|intcomma}}</p>
-    <p>Description: {{posting.description}}</p>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <br>
+    <p class="pb-6"><a href="{% url 'home' %}" class="border border-gray-400 rounded px-4 py-2 hover:bg-gray-200">Home</a></p>
+    <h1 class="text-3xl font-semibold pb-4 underline underline-offset-8">{{ posting.title }}</h1>
+    <p class="pb-2 text-xl">Company: {{ posting.company }}</p>
+    <p class="pb-2 font-semibold">Salary: ${{ posting.salary|intcomma }}</p>
+    <p>Description: {{ posting.description }}</p>
+
+    {% if request.user.is_authenticated and request.user.is_applicant %}
+        <div class="mt-8">
+            <h2 class="text-2xl font-semibold pb-4">Apply for this Job</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Submit Application
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <p class="mt-8 text-red-500">You must be logged in as an applicant to apply for this job.</p>
+    {% endif %}
 </div>
 {% endblock content %}

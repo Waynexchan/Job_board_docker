@@ -1,21 +1,58 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_protect
 from .models import JobPosting, Company, Applicant, Application
 from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm,ApplicantInfoForm, CompanyUpdateForm, LoginForm, JobPostingForm, ApplicationStatusForm, CompanyInfoForm
+import logging
+from django.contrib import messages
 
 
 def index(request):
     active_postings = JobPosting.objects.filter(is_active=True)
+    user_is_applicant = False
+
+    if request.user.is_authenticated:
+        user_is_applicant = request.user.is_applicant
+
     context = {
-        "job_postings": active_postings
+        "job_postings": active_postings,
+        "user_is_applicant": user_is_applicant  
     }
+
     return render(request, 'job_board/index.html', context)
+
 
 def job_detail(request, pk):
     posting = get_object_or_404(JobPosting, pk=pk, is_active=True)
+    form = None
+    user_is_applicant = False  
+    if request.user.is_authenticated and hasattr(request.user, 'applicant'):
+        user_is_applicant = True
+        existing_application = Application.objects.filter(
+            applicant=request.user.applicant, 
+            job_posting=posting
+        ).exists()
+
+        if existing_application:
+            messages.error(request, 'You have already applied for this job.')
+        else:
+            form = ApplicationForm(request.POST or None)
+            if request.method == 'POST':
+                if form.is_valid():
+                    application = form.save(commit=False)
+                    application.job_posting = posting
+                    application.applicant = request.user.applicant
+                    application.save()
+                    messages.success(request, 'Your application has been submitted.')
+                    return redirect('applicant_dashboard')
+                else:
+                    messages.error(request, 'There was an error with your application.')
+
     context = {
-        "posting": posting
+        "posting": posting,
+        "form": form,
+        "user_is_applicant": user_is_applicant  
     }
     return render(request, 'job_board/detail.html', context)
 
@@ -77,6 +114,8 @@ def update_company_info(request):
         form = CompanyInfoForm(instance=company)
     return render(request, 'job_board/update_company_info.html', {'form': form})
 
+logger = logging.getLogger(__name__)
+
 @csrf_protect
 def custom_login(request):
     if request.method == 'POST':
@@ -92,12 +131,15 @@ def custom_login(request):
                 else:
                     return redirect('company_dashboard')
             else:
-                return render(request, 'job_board/login.html', {'form': form, 'error': 'Your Username and password didn\'t match. Please try again.'})
+                # Adding logging for failed login attempt
+                logger.warning('Failed login attempt for username: %s', username)
+                return render(request, 'job_board/login.html', {'form': form, 'error': 'Your username or password didn\'t match. Please try again.'})
         else:
-            return render(request, 'job_board/login.html', {'form': form})
+            logger.warning('Login form is not valid. Errors: %s', form.errors)
     else:
         form = LoginForm()
-        return render(request, 'job_board/login.html', {'form': form})
+
+    return render(request, 'job_board/login.html', {'form': form})
     
 def user_logout(request):
     logout(request)
@@ -155,8 +197,12 @@ def applicant_dashboard(request):
         return redirect('update_applicant_info')  
 
     job_postings = JobPosting.objects.filter(is_active=True)
+
+    applications = Application.objects.filter(applicant=applicant).select_related('job_posting')
+
     context = {
-        'job_postings': job_postings
+        'job_postings': job_postings,
+        'applications': applications  
     }
     return render(request, 'job_board/applicant_dashboard.html', context)
 
@@ -172,6 +218,12 @@ def applicant_info_view(request):
 
 def apply_for_job(request, job_posting_id):
     job_posting = get_object_or_404(JobPosting, pk=job_posting_id, is_active=True)
+
+    applicant = get_object_or_404(Applicant, user=request.user)
+    if Application.objects.filter(applicant=applicant, job_posting=job_posting).exists():
+        messages.error(request, "You have already applied for this job.")
+        return redirect('applicant_dashboard')
+    
     if request.method == 'POST':
         form = ApplicationForm(request.POST, request.FILES)
         if form.is_valid():

@@ -99,9 +99,30 @@ class JobPostingForm(forms.ModelForm):
         fields = ['title', 'description', 'salary', 'is_active']
 
 class ApplicationForm(forms.ModelForm):
+    cover_letter = forms.FileField(
+        required=False,
+        help_text="Optional: Upload your cover letter in PDF format."
+    )
+    portfolio = forms.FileField(
+        required=False,
+        help_text="Optional: Upload your portfolio or additional documents."
+    )
+    
     class Meta:
         model = Application
-        fields = ['cover_letter']
+        fields = ['cover_letter', 'portfolio']
+
+    def clean_cover_letter(self):
+        cover_letter = self.cleaned_data.get('cover_letter')
+        if cover_letter and not cover_letter.name.endswith('.pdf'):
+            raise ValidationError("Only PDF files are accepted for cover letters.")
+        return cover_letter
+
+    def clean_portfolio(self):
+        portfolio = self.cleaned_data.get('portfolio')
+        if portfolio and not portfolio.name.endswith('.pdf'):
+            raise ValidationError("Only PDF files are accepted for portfolios.")
+        return portfolio
 
 class ApplicationStatusForm(forms.ModelForm):
     class Meta:

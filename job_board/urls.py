@@ -19,5 +19,6 @@ urlpatterns = [
     path('company/update_info/', update_company_info, name='update_company_info'),
     path('logout/', user_logout, name='logout'),
     path('applicant/update_info/', update_applicant_info, name='update_applicant_info'),
+    
 
 ]

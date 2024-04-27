@@ -4,6 +4,19 @@
 <h2>Applicant Dashboard</h2>
 <p>Welcome {{ request.user.username }}</p>
 
+<h3>Your Applications:</h3>
+{% if applications %}
+<ul>
+    {% for application in applications %}
+    <li>
+        Applied for <a href="{% url 'job-detail' pk=application.job_posting.pk %}">{{ application.job_posting.title }}</a> - {{ application.job_posting.company.name }} on {{ application.application_date|date:"Y-m-d" }} | Status: {{ application.status }}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>You have not applied for any jobs yet.</p>
+{% endif %}
+
 <h3>Active Job Postings:</h3>
 <ul>
     {% for job in job_postings %}
