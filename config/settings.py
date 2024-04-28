@@ -147,3 +147,11 @@ EMAIL_PORT = 587                # Gmail 的 SMTP 伺服器端口，使用 TLS �
 EMAIL_USE_TLS = True            # 使用 TLS 加密
 
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
+
+# settings.py
+
+LOGIN_URL = 'login'
+
+DEFAULT_FROM_EMAIL = 'bearwayne033@gmail.com'
+
+

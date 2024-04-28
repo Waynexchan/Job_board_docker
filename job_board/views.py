@@ -1,11 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.views.decorators.csrf import csrf_protect
 from .models import JobPosting, Company, Applicant, Application
 from .forms import ApplicantSignUpForm, CompanySignUpForm,ApplicationForm,ApplicantInfoForm, CompanyUpdateForm, LoginForm, JobPostingForm, ApplicationStatusForm, CompanyInfoForm
 import logging
-from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.http import urlsafe_base64_encode , urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
+
+
 
 
 def index(request):
@@ -59,19 +70,65 @@ def job_detail(request, pk):
     }
     return render(request, 'job_board/detail.html', context)
 
+User = get_user_model()
+
+def send_activation_email(user, request):
+    current_site = get_current_site(request)
+    mail_subject = 'Activate your account.'
+    message = render_to_string('job_board/acc_active_email.html', {
+        'user': user,
+        'domain': current_site.domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': default_token_generator.make_token(user),
+    })
+    to_email = user.email
+    send_mail(
+        mail_subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,  
+        [to_email],
+        fail_silently=False,
+    )
+    
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)  
+        if user.is_applicant:
+            return redirect('update_applicant_info')
+        elif user.is_company:
+            return redirect('update_company_info')
+        else:
+            return redirect('home')
+    else:
+        return HttpResponse('Activation link is invalid!')
+
+
+
 def register_applicant(request):
     if request.method == 'POST':
         form = ApplicantSignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)  
-            return redirect('update_applicant_info')  
+            user = form.save(commit=False)
+            user.is_active = False  
+            user.save()
+            send_activation_email(user, request)  
+            return HttpResponse('Please confirm your email address to complete the registration')
         else:
             return render(request, 'job_board/register_applicant.html', {'form': form, 'error': 'Please revise the information provided.'})
     else:
         form = ApplicantSignUpForm()
     return render(request, 'job_board/register_applicant.html', {'form': form})
 
+@login_required
 def update_applicant_info(request):
     try:
         applicant = request.user.applicant
@@ -92,15 +149,18 @@ def register_company(request):
     if request.method == 'POST':
         form = CompanySignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)  
-            return redirect('update_company_info')  
+            user = form.save(commit=False)
+            user.is_active = False  
+            user.save()
+            send_activation_email(user, request)  
+            return HttpResponse('Please confirm your email address to complete the registration')
         else:
             return render(request, 'job_board/register_company.html', {'form': form, 'error': 'Please revise the information provided.'})
     else:
         form = CompanySignUpForm()
     return render(request, 'job_board/register_company.html', {'form': form})
 
+@login_required
 def update_company_info(request):
     try:
         company = request.user.company

@@ -1,7 +1,7 @@
 {% extends 'job_board/_base.html' %}
 
 {% block content %}
-<div class="flex justify-center py-12 bg-gray-50 min-h-screen">
+<div class="flex justify-center items-center py-4 bg-gray-50">
     <div class="w-full max-w-md">
         {% if form.errors %}
         <div role="alert" class="mb-4 p-4 text-red-700 bg-red-100 rounded-lg">
@@ -22,7 +22,7 @@
 
         <form action="{% url 'login' %}" method="post" class="bg-white shadow rounded-lg overflow-hidden">
             {% csrf_token %}
-            <div class="px-8 py-6 space-y-4">
+            <div class="px-6 py-4 space-y-4">
                 {% for field in form %}
                 <div>
                     <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700">{{ field.label }}</label>
@@ -38,9 +38,14 @@
                 </button>
             </div>
         </form>
-        <p class="text-center mt-4 text-sm">
+        <div class="mt-4 text-center">
+            <p class="text-gray-600 text-sm">Don't have an account?</p>
+            <a href="{% url 'register_applicant' %}" class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">Register as Applicant</a> | 
+            <a href="{% url 'register_company' %}" class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">Register as Company</a>
+        </div>
+        <div class="text-center mt-4 text-sm">
             <a href="{% url 'password_reset' %}" class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">Forgot your password?</a>
-        </p>
+        </div>
     </div>
 </div>
 {% endblock %}
