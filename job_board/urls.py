@@ -10,7 +10,7 @@ urlpatterns = [
     path('job/<int:pk>/', job_detail, name='job-detail'),
     path('register/applicant/', register_applicant, name='register_applicant'),
     path('register/company/', register_company, name='register_company'),
-    path('login/', custom_login, name='login'),  
+    path('accounts/login/', custom_login, name='login'),  
     path('company/dashboard/', company_dashboard, name='company_dashboard'),
     path('company/create_job_posting/', create_job_posting, name='create_job_posting'),
     path('company/update_application_status/<int:application_id>/', update_application_status, name='update_application_status'),
@@ -20,6 +20,6 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     path('applicant/update_info/', update_applicant_info, name='update_applicant_info'),
     path('job/edit/<int:pk>/', edit_job_posting, name='edit_job_posting'),
-    
+   
 
 ]
