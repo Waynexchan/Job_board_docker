@@ -1,10 +1,22 @@
 {% extends "job_board/_base.html" %}
 
 {% block content %}
-<h2>Update Company Information</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+<div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+    <h2 class="text-2xl font-semibold text-center mb-6">Update Company Information</h2>
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+            <input id="{{ field.id_for_label }}" name="{{ field.html_name }}" type="{{ field.field.widget.input_type }}" value="{{ field.value|default_if_none:'' }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" {% if field.field.required %}required{% endif %}>
+            {% for error in field.errors %}
+            <p class="text-sm text-red-500">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            Save Changes
+        </button>
+    </form>
+</div>
 {% endblock %}

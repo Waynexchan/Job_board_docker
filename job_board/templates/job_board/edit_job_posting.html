@@ -1,10 +1,28 @@
 {% extends "job_board/_base.html" %}
 
 {% block content %}
-<h2>Edit Job Posting</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+<div class="max-w-4xl mx-auto px-5 py-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Edit Job Posting</h2>
+    <form method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {% csrf_token %}
+        {{ form.media }}
+        {% for field in form %}
+        <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+            <p class="text-gray-600 text-xs italic">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-red-500 text-xs italic">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Save Changes
+        </button>
+    </form>
+</div>
 {% endblock %}

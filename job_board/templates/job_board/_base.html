@@ -7,47 +7,55 @@
     <title>Job Board</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800">
     <div class="mb-8">
-        <h1 class="text-4xl py-8 pl-8">
-        <a href="{% url 'home' %}">
-                🗃️ Job Board
-            </a>
-        </h1>
-        <hr>
-        
-        <div class="flex justify-between items-center px-8">
-            <!-- Left side of the header -->
-            <div>
-                <!-- Placeholder for potential left-side content -->
-            </div>
-            
-            <!-- Right side of the header -->
-            <div>
-                {% if request.user.is_authenticated %}
-                    {% if user_is_applicant %}
-                        <a href="{% url 'applicant_dashboard' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4">
-                            Applicant Dashboard
-                        </a>
-                    {% endif %}
-                    {% if user_is_company %}
-                        <a href="{% url 'company_dashboard' %}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-4">
-                            Company Dashboard
-                        </a>
-                    {% endif %}
-                    <a href="{% url 'home' %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4">
-                        Home
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold leading-tight text-gray-900">
+                    <a href="{% url 'home' %}">
+                        🗃️ Job Board
                     </a>
-                    <a href="{% url 'logout' %}" class="text-red-500">Logout</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Login
-                    </a>
-                {% endif %}
+                </h1>
             </div>
-        </div>
+        </header>
+
+        <nav class="bg-gray-800">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                <div class="relative flex items-center justify-between h-16">
+                    <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+                        <div class="flex-shrink-0 flex items-center">
+                            <!-- Placeholder for logo or additional navigation -->
+                        </div>
+                    </div>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                        {% if request.user.is_authenticated %}
+                            {% if user_is_applicant %}
+                                <a href="{% url 'applicant_dashboard' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium bg-blue-500 hover:bg-blue-600">
+                                    Applicant Dashboard
+                                </a>
+                            {% endif %}
+                            {% if user_is_company %}
+                                <a href="{% url 'company_dashboard' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium bg-green-500 hover:bg-green-600">
+                                    Company Dashboard
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'home' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                Home
+                            </a>
+                            <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium">
+                                Logout
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                                Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
     </div>
-    <div class="container mx-auto mb-8">
+    <div class="container mx-auto mb-8 px-4 sm:px-6 lg:px-8">
         {% block content %}
         {% endblock content %}
     </div>

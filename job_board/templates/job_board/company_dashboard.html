@@ -1,27 +1,43 @@
 {% extends "job_board/_base.html" %}
 
 {% block content %}
-<h2>Company Dashboard</h2>
-<p>Welcome {{ request.user.username }}</p>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">Company Dashboard</h2>
+    <p class="mb-4">Welcome {{ request.user.username }}</p>
 
-<a href="{% url 'update_company_info' %}" class="btn btn-primary">Edit Company Information</a>
+    <a href="{% url 'update_company_info' %}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        Edit Company Information
+    </a>
 
-<h3>Your Job Postings:</h3>
-<ul>
-    {% for job in job_postings %}
-    <li>{{ job.title }}
-        <a href="{% url 'edit_job_posting' job.id %}" class="btn btn-info">Edit</a>
-        <ul>
-            {% for application in job.applications.all %}
-            <li>Application by {{ application.applicant.name }} - <a href="{% url 'update_application_status' application_id=application.id %}">Update Status</a></li>
-            {% empty %}
-            <li>No applications yet</li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% empty %}
-    <li>You have no job postings currently.</li>
-    {% endfor %}
-</ul>
-<a href="{% url 'create_job_posting' %}">Create a new job posting</a>
+    <h3 class="text-2xl font-semibold text-gray-700 mt-6 mb-2">Your Job Postings:</h3>
+    <ul class="list-disc pl-5 space-y-2">
+        {% for job in job_postings %}
+        <li>
+            <div class="flex justify-between items-center">
+                <span class="font-medium flex-grow">{{ job.title }}</span>
+                <a href="{% url 'edit_job_posting' job.id %}" class="ml-4 bg-blue-300 hover:bg-blue-400 text-white font-bold py-1 px-3 rounded text-xs">
+                    Edit
+                </a>
+            </div>
+            <ul class="list-disc pl-5 mt-1 space-y-1">
+                {% for application in job.applications.all %}
+                <li>
+                    Application by {{ application.applicant.name }} - 
+                    <a href="{% url 'update_application_status' application_id=application.id %}" class="text-blue-500 hover:underline">
+                        Update Status
+                    </a>
+                </li>
+                {% empty %}
+                <li class="text-gray-500">No applications yet</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% empty %}
+        <li class="text-gray-500">You have no job postings currently.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'create_job_posting' %}" class="mt-4 inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+        Create a new job posting
+    </a>
+</div>
 {% endblock %}

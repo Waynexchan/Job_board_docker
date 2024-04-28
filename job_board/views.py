@@ -235,19 +235,26 @@ def applicant_info_view(request):
 def apply_for_job(request, job_posting_id):
     job_posting = get_object_or_404(JobPosting, pk=job_posting_id, is_active=True)
 
-    applicant = get_object_or_404(Applicant, user=request.user)
+    if not request.user.is_authenticated or not hasattr(request.user, 'applicant'):
+        messages.error(request, "You need to be logged in and registered as an applicant.")
+        return redirect('login')
+
+    applicant = request.user.applicant
+
     if Application.objects.filter(applicant=applicant, job_posting=job_posting).exists():
         messages.error(request, "You have already applied for this job.")
         return redirect('applicant_dashboard')
-    
+
     if request.method == 'POST':
         form = ApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             application = form.save(commit=False)
-            application.applicant = get_object_or_404(Applicant, user=request.user)
+            application.applicant = applicant
             application.job_posting = job_posting
             application.save()
+            messages.success(request, "Your application has been submitted successfully.")
             return redirect('applicant_dashboard')
     else:
         form = ApplicationForm()
+
     return render(request, 'job_board/apply_for_job.html', {'form': form, 'job_posting': job_posting})

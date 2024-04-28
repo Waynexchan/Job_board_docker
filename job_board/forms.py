@@ -128,6 +128,11 @@ class ApplicationStatusForm(forms.ModelForm):
     class Meta:
         model = Application
         fields = ['status']
+        widgets = {
+            'status': forms.Select(attrs={
+                'class': 'block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+            })
+        }
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Username', max_length=100)

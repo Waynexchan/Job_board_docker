@@ -1,10 +1,30 @@
 {% extends "job_board/_base.html" %}
 
 {% block content %}
-<h2>Create Job Posting</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create</button>
-</form>
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Create Job Posting</h2>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form.media }}
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                {{ field.label }}
+            </label>
+            <div class="mt-1">
+                {{ field }}
+                {% if field.help_text %}
+                <p class="mt-2 text-sm text-gray-500">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+            {% for error in field.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Create
+        </button>
+    </form>
+</div>
 {% endblock %}
