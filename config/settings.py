@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     #local app
     'job_board',
+
+    #3rd party
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
