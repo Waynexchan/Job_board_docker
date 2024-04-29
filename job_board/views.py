@@ -15,8 +15,7 @@ from django.utils.http import urlsafe_base64_encode , urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
-
-
+from django.core.exceptions import PermissionDenied
 
 
 def index(request):
@@ -263,6 +262,23 @@ def update_application_status(request, application_id):
         form = ApplicationStatusForm(instance=application)
     return render(request, 'job_board/update_application_status.html', {'form': form})
 
+@login_required
+def delete_job_posting(request, pk):
+    job_posting = get_object_or_404(JobPosting, pk=pk, company__user=request.user)
+    
+    if request.method == 'POST':
+        applications = Application.objects.filter(job_posting=job_posting)
+        for application in applications:
+            application.status = 'DELETED'  # 使用新增的狀態
+            application.save()
+
+        job_posting.delete()
+        messages.success(request, "The job posting has been deleted successfully.")
+        return redirect('company_dashboard')
+    else:
+        context = {'job_posting': job_posting}
+        return render(request, 'job_board/confirm_delete_job_posting.html', context)
+    
 def applicant_dashboard(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'applicant'):
         return redirect('home')

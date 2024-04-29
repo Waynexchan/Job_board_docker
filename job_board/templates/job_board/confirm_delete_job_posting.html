@@ -1,0 +1,12 @@
+{% extends "job_board/_base.html" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto mt-10 px-4 py-8 bg-white shadow-lg rounded-lg">
+    <h2 class="text-2xl font-bold text-center mb-6">Are you sure you want to delete this job posting?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
+        <a href="{% url 'company_dashboard' %}" class="bg-gray-300 hover:bg-gray-500 text-black font-bold py-2 px-4 rounded">Cancel</a>
+    </form>
+</div>
+{% endblock %}

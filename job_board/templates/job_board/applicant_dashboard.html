@@ -15,7 +15,14 @@
         <ul class="list-disc pl-5">
             {% for application in applications %}
             <li class="mb-2">
-                <span>Applied for </span><a href="{% url 'job-detail' pk=application.job_posting.pk %}" class="text-blue-500 hover:text-blue-700">{{ application.job_posting.title }}</a><span> - {{ application.job_posting.company.name }} on {{ application.application_date|date:"Y-m-d" }} | Status: </span><span class="font-semibold">{{ application.status }}</span>
+                <span>Applied for </span>
+                {% if application.job_posting %}
+                <a href="{% url 'job-detail' pk=application.job_posting.pk %}" class="text-blue-500 hover:text-blue-700">{{ application.job_posting.title }}</a>
+                <span> - {{ application.job_posting.company.name }} on {{ application.application_date|date:"Y-m-d" }} | Status: </span>
+                {% else %}
+                <span>Job Posting Deleted on {{ application.application_date|date:"Y-m-d" }} | Status: </span>
+                {% endif %}
+                <span class="font-semibold">{{ application.status }}</span>
             </li>
             {% endfor %}
         </ul>

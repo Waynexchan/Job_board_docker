@@ -84,13 +84,14 @@ class Company(models.Model):
         super().save(*args, **kwargs)
     
 class Application(models.Model):
-    job_posting = models.ForeignKey(JobPosting, on_delete=models.CASCADE, related_name='applications')
+    job_posting = models.ForeignKey(JobPosting, on_delete=models.SET_NULL, null=True, related_name='applications')
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='applications')
     cover_letter = models.FileField(upload_to='cover_letters/')
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
         ('ACCEPTED', 'Accepted'),
-        ('REJECTED', 'Rejected')
+        ('REJECTED', 'Rejected'),
+        ('DELETED', 'Job Posting Deleted')
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     application_date = models.DateTimeField(auto_now_add=True)

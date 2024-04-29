@@ -18,6 +18,9 @@
                 <a href="{% url 'edit_job_posting' job.id %}" class="ml-4 bg-blue-300 hover:bg-blue-400 text-white font-bold py-1 px-3 rounded text-xs">
                     Edit
                 </a>
+                <a href="{% url 'delete_job_posting' job.id %}" class="ml-4 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-xs">
+                    Delete
+                </a>
             </div>
             <ul class="list-disc pl-5 mt-1 space-y-1">
                 {% for application in job.applications.all %}
