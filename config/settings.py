@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-#5mc2rq4d4a0&m^ff=lwxpra^ja0w=%p-^dp(7_*m%c4)%od=^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['jobboard-ppsm.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
