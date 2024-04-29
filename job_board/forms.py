@@ -1,3 +1,4 @@
+from venv import logger
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
@@ -99,30 +100,25 @@ class JobPostingForm(forms.ModelForm):
         fields = ['title', 'description', 'salary', 'is_active']
 
 class ApplicationForm(forms.ModelForm):
-    cover_letter = forms.FileField(
-        required=False,
-        help_text="Optional: Upload your cover letter in PDF format."
-    )
-    portfolio = forms.FileField(
-        required=False,
-        help_text="Optional: Upload your portfolio or additional documents."
-    )
-    
     class Meta:
         model = Application
-        fields = ['cover_letter', 'portfolio']
+        fields = []  
+
+    def __init__(self, *args, **kwargs):
+        applicant = kwargs.pop('applicant', None)
+        super(ApplicationForm, self).__init__(*args, **kwargs)
+        if applicant:
+            self.fields['resume'].initial = applicant.resume
+            self.fields['cover_letter'].initial = applicant.cover_letter
+
 
     def clean_cover_letter(self):
         cover_letter = self.cleaned_data.get('cover_letter')
         if cover_letter and not cover_letter.name.endswith('.pdf'):
+            logger.error('Invalid cover letter format. Only PDF files are accepted.')
             raise ValidationError("Only PDF files are accepted for cover letters.")
         return cover_letter
 
-    def clean_portfolio(self):
-        portfolio = self.cleaned_data.get('portfolio')
-        if portfolio and not portfolio.name.endswith('.pdf'):
-            raise ValidationError("Only PDF files are accepted for portfolios.")
-        return portfolio
 
 class ApplicationStatusForm(forms.ModelForm):
     class Meta:

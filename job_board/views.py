@@ -15,7 +15,8 @@ from django.utils.http import urlsafe_base64_encode , urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ValidationError
+
 
 
 def index(request):
@@ -38,34 +39,47 @@ def index(request):
 
 def job_detail(request, pk):
     posting = get_object_or_404(JobPosting, pk=pk, is_active=True)
-    form = None
-    user_is_applicant = False  
+    user_is_applicant = False
+
     if request.user.is_authenticated and hasattr(request.user, 'applicant'):
         user_is_applicant = True
+        applicant = request.user.applicant
+
+        
+        if not applicant.resume or not applicant.cover_letter:
+            
+            return redirect('update_applicant_info')
+
+        
         existing_application = Application.objects.filter(
-            applicant=request.user.applicant, 
+            applicant=applicant,
             job_posting=posting
         ).exists()
 
         if existing_application:
             messages.error(request, 'You have already applied for this job.')
+            form = None  
         else:
-            form = ApplicationForm(request.POST or None)
-            if request.method == 'POST':
-                if form.is_valid():
-                    application = form.save(commit=False)
-                    application.job_posting = posting
-                    application.applicant = request.user.applicant
-                    application.save()
-                    messages.success(request, 'Your application has been submitted.')
-                    return redirect('applicant_dashboard')
-                else:
-                    messages.error(request, 'There was an error with your application.')
+            form = ApplicationForm()  
+
+        if request.method == 'POST':
+            form = ApplicationForm(request.POST, request.FILES)
+            if form.is_valid():
+                application = form.save(commit=False)
+                application.job_posting = posting
+                application.applicant = applicant
+                application.save()
+                messages.success(request, 'Your application has been submitted.')
+                return redirect('applicant_dashboard')
+            else:
+                messages.error(request, 'There was an error with your application.')
+    else:
+        form = None
 
     context = {
         "posting": posting,
         "form": form,
-        "user_is_applicant": user_is_applicant  
+        "user_is_applicant": user_is_applicant
     }
     return render(request, 'job_board/detail.html', context)
 
@@ -127,6 +141,8 @@ def register_applicant(request):
         form = ApplicantSignUpForm()
     return render(request, 'job_board/register_applicant.html', {'form': form})
 
+logger = logging.getLogger(__name__)
+
 @login_required
 def update_applicant_info(request):
     try:
@@ -139,7 +155,10 @@ def update_applicant_info(request):
         form = ApplicantInfoForm(request.POST, request.FILES, instance=applicant)
         if form.is_valid():
             form.save()
+            logger.info('Applicant information updated successfully.')
             return redirect('applicant_dashboard')
+        else:
+            logger.error('Form is not valid. Errors: %s', form.errors)
     else:
         form = ApplicantInfoForm(instance=applicant)
     return render(request, 'job_board/update_applicant_info.html', {'form': form})
@@ -209,16 +228,16 @@ def user_logout(request):
     
 def company_dashboard(request):
     if not request.user.is_company:
-        return redirect('home')  
+        return redirect('home')
 
     company = get_object_or_404(Company, user=request.user)
-    if not company.name or not company.address or not company.description:
-        return redirect('update_company_info')
-    
     job_postings = JobPosting.objects.filter(company=company)
+    applications = Application.objects.filter(job_posting__company=company).select_related('applicant', 'job_posting')
+
     context = {
         'company': company,
-        'job_postings': job_postings
+        'job_postings': job_postings,
+        'applications': applications
     }
     return render(request, 'job_board/company_dashboard.html', context)
 
@@ -269,7 +288,7 @@ def delete_job_posting(request, pk):
     if request.method == 'POST':
         applications = Application.objects.filter(job_posting=job_posting)
         for application in applications:
-            application.status = 'DELETED'  # 使用新增的狀態
+            application.status = 'DELETED'  
             application.save()
 
         job_posting.delete()
@@ -327,6 +346,14 @@ def apply_for_job(request, job_posting_id):
             application = form.save(commit=False)
             application.applicant = applicant
             application.job_posting = job_posting
+            
+            # Check if applicant has already uploaded resume and cover letter
+            existing_application = Application.objects.filter(applicant=applicant).first()
+            if existing_application:
+                # Use existing resume and cover letter if available
+                application.resume = existing_application.resume
+                application.cover_letter = existing_application.cover_letter
+            
             application.save()
             messages.success(request, "Your application has been submitted successfully.")
             return redirect('applicant_dashboard')

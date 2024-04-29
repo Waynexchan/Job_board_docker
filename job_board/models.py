@@ -19,8 +19,8 @@ class Applicant(models.Model):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
     tel = models.CharField(max_length=20)
-    resume = models.FileField(upload_to='resumes/')
     cover_letter = models.FileField(upload_to='cover_letters/', default='No cover letter provided')
+    resume = models.FileField(upload_to='resumes/', null=True, blank=True)
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
         ('ACCEPTED', 'Accepted'),
@@ -86,7 +86,7 @@ class Company(models.Model):
 class Application(models.Model):
     job_posting = models.ForeignKey(JobPosting, on_delete=models.SET_NULL, null=True, related_name='applications')
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='applications')
-    cover_letter = models.FileField(upload_to='cover_letters/')
+    cover_letter = models.FileField(upload_to='cover_letters/', null=True, blank=True)
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
         ('ACCEPTED', 'Accepted'),
