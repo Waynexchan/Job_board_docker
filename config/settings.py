@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-#5mc2rq4d4a0&m^ff=lwxpra^ja0w=%p-^dp(7_*m%c4)%od=^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['jobboard-ppsm.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'job_board.middlewares.IgnoreHEADRequestsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -177,3 +178,24 @@ LOGIN_URL = 'login'
 DEFAULT_FROM_EMAIL = 'bearwayne033@gmail.com'
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+}
