@@ -1,24 +1,15 @@
-from pathlib import Path
 import os
-
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load environment variables from .env file if it exists
 load_dotenv()
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_default_secret_key')
-
-# Determine if we are running in a production environment
 IS_RENDER = os.getenv('RENDER') is not None
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not IS_RENDER
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Allowed hosts setting
 if IS_RENDER:
     ALLOWED_HOSTS = ['job-board-docker.onrender.com', 'localhost', '127.0.0.1']
 else:
