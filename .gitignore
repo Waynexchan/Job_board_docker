@@ -135,7 +135,12 @@ cython_debug/
 media/
 
 # Static files
-static/
+# 如果你希望確保 `static/` 文件夾中的文件被提交
+# 請確保 `static/` 被注釋掉或移除
+# static/
+
+# Ignore collected static files
+/staticfiles/
 
 # Secrets
 secrets.json
