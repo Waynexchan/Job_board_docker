@@ -20,7 +20,7 @@ DEBUG = not IS_RENDER
 
 # Allowed hosts setting
 if IS_RENDER:
-    ALLOWED_HOSTS = ['https://job-board-docker.onrender.com', 'localhost', '127.0.0.1']
+    ALLOWED_HOSTS = ['job-board-docker.onrender.com', 'localhost', '127.0.0.1']
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
